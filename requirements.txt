@@ -1,4 +1,5 @@
 pip install -r requirements.txt
+pip install streamlit pandas seaborn matplotlib
 
 setuptools>=58.0.0
 numpy==1.24.3
