@@ -1,11 +1,9 @@
-# Streamlit library for building the dashboard
-streamlit==1.25.0
+pip install -r requirements.txt
 
-# Data manipulation and analysis
-pandas==2.0.3
+setuptools>=58.0.0
 numpy==1.24.3
-
-# Data visualization libraries
+pandas==2.0.3
+streamlit==1.25.0
 matplotlib==3.7.1
 seaborn==0.12.2
 plotly==5.15.0
