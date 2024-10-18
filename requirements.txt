@@ -1,1 +1,6 @@
 numpy==1.26.4
+streamlit==1.39.0
+pandas==2.2.2
+seaborn==0.13.2
+matplotlib==3.7.1 # Access version from the main module
+babel==2.16.0
