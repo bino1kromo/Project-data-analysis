@@ -1,6 +1,11 @@
-Babel==2.12.1
-matplotlib==3.8.0
-numpy==1.25.2
-pandas==2.1.4
-seaborn==0.13.0
-streamlit==1.30.0
+# Streamlit library for building the dashboard
+streamlit==1.25.0
+
+# Data manipulation and analysis
+pandas==2.0.3
+numpy==1.24.3
+
+# Data visualization libraries
+matplotlib==3.7.1
+seaborn==0.12.2
+plotly==5.15.0
