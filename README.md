@@ -52,7 +52,7 @@ streamlit run dashboard.py
 ## Data Insights
 The project provides key insights into sales performance, customer segmentation, and order processing efficiency. Each insight is based on comprehensive data analysis performed in the notebook and visualized in the dashboard.
 ## Contact
-For any questions or further inquiries, please reach out to the project maintainer at supmawatimeysi@gmail.com.
+For any questions or further inquiries, please reach out to the project maintainer at meysi.supmawati25@gmail.com.
 
 
 Make sure you customize the file paths, project descriptions, or contact details as per your actual project settings.
