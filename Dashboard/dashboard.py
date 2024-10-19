@@ -24,39 +24,40 @@ sns.set(style='darkgrid')
 
 # Fungsi untuk membuat DataFrame dengan penjualan bulanan
 def create_monthly_sales_df(df):
-    # Mengelompokkan data berdasarkan tahun dan bulan pembelian, lalu menghitung total penjualan
     monthly_sales = df.groupby(['order_purchase_year', 'order_purchase_month'])['price'].sum().reset_index()
-    # Menggabungkan kolom tahun dan bulan menjadi satu kolom 'month_year'
     monthly_sales['month_year'] = monthly_sales['order_purchase_year'].astype(str) + '-' + monthly_sales['order_purchase_month'].astype(str)
     return monthly_sales
 
 # Fungsi untuk membuat DataFrame dengan penjualan produk berdasarkan kategori
 def create_product_sales_df(df):
-    # Menghitung jumlah produk terjual berdasarkan kategori
     product_sales = df['product_category_name_english'].value_counts().reset_index()
-    # Menamai ulang kolom
     product_sales.columns = ['product_category_name_english', 'order_item_id']
     return product_sales
 
 # Fungsi untuk membuat DataFrame RFM (Recency, Frequency, Monetary)
 def create_rfm_df(df):
-    # Menghitung jumlah hari sejak pembelian terakhir
     df['days_since_last_purchase'] = (df['order_purchase_timestamp'].max() - df['order_purchase_timestamp']).dt.days
-    # Menghitung recency, frequency, dan monetary untuk setiap customer
     recency = df.groupby('customer_id')['days_since_last_purchase'].min().reset_index()
     frequency = df.groupby('customer_id')['order_id'].nunique().reset_index()
     monetary = df.groupby('customer_id')['order_value'].sum().reset_index()
-    # Menggabungkan data recency, frequency, dan monetary menjadi satu DataFrame
     rfm = recency.merge(frequency, on='customer_id').merge(monetary, on='customer_id')
-    # Menamai ulang kolom
     rfm.columns = ['customer_id', 'recency', 'frequency', 'monetary']
     return rfm
 
 # Fungsi untuk membuat DataFrame penjual dengan total penjualan tertinggi
 def create_top_sellers_df(df):
-    # Mengelompokkan data berdasarkan seller_id dan menghitung total order_value, lalu mengurutkannya
     top_sellers = df.groupby('seller_id')['order_value'].sum().sort_values(ascending=False).reset_index().head(10)
     return top_sellers
+
+# Fungsi untuk menghitung Customer Lifetime Value (CLV)
+def calculate_clv(df):
+    first_purchase = df.groupby('customer_id')['order_purchase_timestamp'].min().reset_index()
+    first_purchase.columns = ['customer_id', 'first_purchase_date']
+    df = df.merge(first_purchase, on='customer_id')
+    df['days_since_first_purchase'] = (pd.to_datetime('today') - df['first_purchase_date']).dt.days
+    clv = df.groupby('customer_id')['order_value'].sum().reset_index()
+    clv.columns = ['customer_id', 'customer_lifetime_value']
+    return df.merge(clv, on='customer_id', how='left')
 
 # Load Data
 
@@ -68,109 +69,140 @@ response = requests.get(url)
 with gzip.open(io.BytesIO(response.content), 'rt') as file:
     sales_data = pd.read_csv(file)
 
-# Mengonversi kolom waktu menjadi tipe datetime untuk memudahkan manipulasi data waktu
+# Mengonversi kolom waktu menjadi tipe datetime
 sales_data['order_purchase_timestamp'] = pd.to_datetime(sales_data['order_purchase_timestamp'])
 sales_data['order_estimated_delivery_date'] = pd.to_datetime(sales_data['order_estimated_delivery_date'])
 sales_data['order_delivered_customer_date'] = pd.to_datetime(sales_data['order_delivered_customer_date'])
 
-# Menambahkan kolom bulan dan tahun dari kolom order_purchase_timestamp
+# Menambahkan kolom bulan dan tahun
 sales_data['order_purchase_month'] = sales_data['order_purchase_timestamp'].dt.month
 sales_data['order_purchase_year'] = sales_data['order_purchase_timestamp'].dt.year
 
 # Sidebar Filters
 
-# Mendapatkan tanggal awal dan akhir dari data
 min_date = sales_data['order_purchase_timestamp'].min()
 max_date = sales_data['order_purchase_timestamp'].max()
 
-# Membuat sidebar untuk memilih rentang waktu dengan menggunakan widget date_input
 with st.sidebar:
-    # Menampilkan gambar di sidebar
     st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/6b76b91f13b21ad5f2e38b8d5f014f431ffce9e9/Dashboard/logo-olist.png")
-    # Mengatur rentang waktu yang dapat dipilih pengguna
     start_date, end_date = st.date_input("Rentang Waktu", min_value=min_date, max_value=max_date, value=[min_date, max_date])
 
-# Menyaring data berdasarkan rentang waktu yang dipilih
+# Menyaring data
 filtered_data = sales_data[(sales_data['order_purchase_timestamp'] >= str(start_date)) & (sales_data['order_purchase_timestamp'] <= str(end_date))]
 
 # Main Dashboard
 
-# Menampilkan judul dashboard
 st.title("Brazilian E-Commerce Dashboard")
 
 # Monthly Sales
-# Membuat DataFrame untuk performa penjualan bulanan dari data yang telah difilter
 monthly_sales_df = create_monthly_sales_df(filtered_data)
-
-# Menampilkan subjudul pada dashboard
 st.subheader("Performa Revenue Bulanan")
-
-# Membuat grafik line plot untuk visualisasi penjualan bulanan
 fig, ax = plt.subplots(figsize=(14, 7))
-sns.lineplot(data=monthly_sales_df, x='month_year', y='price', ax=ax, color='#008000')
-plt.xticks(rotation=45)  # Memutar label sumbu X agar lebih mudah dibaca
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+sns.lineplot(data=monthly_sales_df, x='month_year', y='price', ax=ax, color='blue')
+plt.xticks(rotation=45)
+ax.set_ylabel('Total Revenue', fontsize=12)
+st.pyplot(fig)
 
 # Top Product Sales
-# Membuat DataFrame untuk produk terlaris dari data yang telah difilter
 product_sales_df = create_product_sales_df(filtered_data)
-
-# Menampilkan subjudul pada dashboard
 st.subheader("Top 10 Kategori Produk Terlaris")
-
-# Membuat grafik bar plot untuk 10 kategori produk terlaris
 fig, ax = plt.subplots(figsize=(14, 7))
-# Menggunakan warna yang lebih sederhana, dengan satu warna utama dan satu variasi untuk menyoroti nilai
 sns.barplot(data=product_sales_df.head(10), 
             x='order_item_id', 
             y='product_category_name_english', 
-            palette=['#A9DFBF' if i < 9 else '#1D8348' for i in range(10)],  # Menggunakan hijau muda dan hijau gelap
-            ax=ax)
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+            ax=ax, color='blue')
+ax.set_xlabel('Jumlah Penjualan', fontsize=12)
+ax.set_ylabel('Kategori Produk', fontsize=12)
+st.pyplot(fig)
 
 # RFM Analysis
-# Membuat DataFrame untuk analisis RFM dari data yang telah difilter
 rfm_df = create_rfm_df(filtered_data)
-
-# Visualize Recency
-# Menampilkan subjudul pada dashboard
 st.subheader("Distribusi Recency")
-
-# Membuat histogram untuk visualisasi distribusi recency
 fig, ax = plt.subplots(figsize=(12, 6))
-sns.histplot(rfm_df['recency'], bins=20, kde=True, color='#008000', ax=ax)
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+sns.histplot(rfm_df['recency'], bins=20, kde=True, color='blue', ax=ax)
+ax.set_title('Distribusi Recency', fontsize=16)
+ax.set_xlabel('Hari Sejak Pembelian Terakhir', fontsize=12)
+ax.set_ylabel('Jumlah Pelanggan', fontsize=12)
+st.pyplot(fig)
 
-# Visualize Frequency
-# Menampilkan subjudul pada dashboard
 st.subheader("Distribusi Frequency")
-
-# Membuat histogram untuk visualisasi distribusi frequency
 fig, ax = plt.subplots(figsize=(12, 6))
-sns.histplot(rfm_df['frequency'], bins=20, kde=True, color='#008000', ax=ax)
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+sns.histplot(rfm_df['frequency'], bins=20, kde=True, color='blue', ax=ax)
+ax.set_title('Distribusi Frequency', fontsize=16)
+ax.set_xlabel('Frekuensi Pembelian', fontsize=12)
+ax.set_ylabel('Jumlah Pelanggan', fontsize=12)
+st.pyplot(fig)
 
-# Visualize Monetary
-# Menampilkan subjudul pada dashboard
 st.subheader("Distribusi Monetary")
-
-# Membuat histogram untuk visualisasi distribusi monetary
 fig, ax = plt.subplots(figsize=(12, 6))
-sns.histplot(rfm_df['monetary'], bins=20, kde=True, color='#008000', ax=ax)
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+sns.histplot(rfm_df['monetary'], bins=20, kde=True, color='blue', ax=ax)
+ax.set_title('Distribusi Monetary', fontsize=16)
+ax.set_xlabel('Total Nilai Pembelian', fontsize=12)
+ax.set_ylabel('Jumlah Pelanggan', fontsize=12)
+st.pyplot(fig)
 
 # Top Sellers
-# Membuat DataFrame untuk penjual teratas dari data yang telah difilter
 top_sellers_df = create_top_sellers_df(filtered_data)
-
-# Menampilkan subjudul pada dashboard
 st.subheader("Top 10 Penjual Berdasarkan Penjualan")
-
-# Membuat grafik bar plot untuk 10 penjual teratas berdasarkan nilai penjualan
 fig, ax = plt.subplots(figsize=(12, 6))
-# Menggunakan warna yang lebih sederhana, dengan satu warna utama dan satu variasi untuk menyoroti nilai
 sns.barplot(x=top_sellers_df['seller_id'], 
             y=top_sellers_df['order_value'], 
-            palette=['#AED6F1' if i < 9 else '#2E86C1' for i in range(10)],  # Menggunakan biru muda dan biru gelap
-            ax=ax)
-st.pyplot(fig)  # Menampilkan grafik di Streamlit
+            ax=ax, color='blue')
+ax.set_title('Top 10 Penjual', fontsize=16)
+ax.set_xlabel('Penjual', fontsize=12)
+ax.set_ylabel('Total Penjualan', fontsize=12)
+plt.xticks(rotation=45)
+st.pyplot(fig)
+
+# Menghitung Customer Lifetime Value dan menambahkan kolom ke sales_data
+sales_data = calculate_clv(filtered_data)
+
+# Visualisasi Tenure
+st.subheader("Distribusi Tenure")
+fig, axes = plt.subplots(1, 2, figsize=(18, 6))
+sns.histplot(sales_data['days_since_first_purchase'], bins=20, kde=True, color='blue', ax=axes[0])
+axes[0].set_title('Distribusi Tenure', fontsize=16)
+axes[0].set_xlabel('Hari Sejak Pembelian Pertama', fontsize=12)
+axes[0].set_ylabel('Jumlah Pelanggan', fontsize=12)
+
+# Visualisasi Customer Lifetime Value (CLV)
+sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='blue', ax=axes[1])
+axes[1].set_title('Distribusi Customer Lifetime Value', fontsize=16)
+axes[1].set_xlabel('Nilai Seumur Hidup Pelanggan', fontsize=12)
+axes[1].set_ylabel('Jumlah Pelanggan', fontsize=12)
+
+plt.tight_layout()
+st.pyplot(fig)
+
+# Distribusi status pesanan
+st.subheader("Distribusi Status Pesanan")
+order_status_count = sales_data['order_status'].value_counts()
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.barplot(x=order_status_count.index, y=order_status_count.values, color='blue', ax=ax)
+ax.set_title('Distribusi Status Pesanan', fontsize=16)
+ax.set_xlabel('Status Pesanan', fontsize=12)
+ax.set_ylabel('Jumlah Pesanan', fontsize=12)
+plt.xticks(rotation=45)
+st.pyplot(fig)
+
+# Waktu Pengiriman
+st.subheader("Waktu Pengiriman")
+delivery_time = (filtered_data['order_estimated_delivery_date'] - filtered_data['order_delivered_customer_date']).dt.days
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.histplot(delivery_time, bins=30, kde=True, color='blue', ax=ax)
+ax.set_title('Waktu Pengiriman (Hari)', fontsize=16)
+ax.set_xlabel('Hari', fontsize=12)
+ax.set_ylabel('Jumlah Pengiriman', fontsize=12)
+st.pyplot(fig)
+
+# Segmentasi Pelanggan
+st.subheader("Segmentasi Pelanggan Berdasarkan RFM")
+rfm_df['RFM_Score'] = (rfm_df['recency'].rank(ascending=True) + 
+                        rfm_df['frequency'].rank(ascending=False) + 
+                        rfm_df['monetary'].rank(ascending=False)).astype(int)
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.histplot(rfm_df['RFM_Score'], bins=20, kde=True, color='blue', ax=ax)
+ax.set_title('Segmentasi Pelanggan Berdasarkan RFM Score', fontsize=16)
+ax.set_xlabel('RFM Score', fontsize=12)
+ax.set_ylabel('Jumlah Pelanggan', fontsize=12)
+st.pyplot(fig)
