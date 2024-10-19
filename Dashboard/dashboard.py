@@ -108,7 +108,7 @@ fig, ax = plt.subplots(figsize=(14, 7))
 sns.barplot(data=product_sales_df.head(10), 
             x='order_item_id', 
             y='product_category_name_english', 
-            palette='viridis',  # Gunakan palet yang menarik
+            palette=['#A9DFBF' if i < 9 else '#008000' for i in range(10)],  # Gunakan palet yang menarik
             ax=ax)
 ax.set_title('Top 10 Best Selling Product Categories', fontsize=20, fontweight='bold')
 ax.set_xlabel('Number of Sales', fontsize=14)
@@ -151,7 +151,7 @@ st.subheader("Top 10 Penjual Berdasarkan Penjualan")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.barplot(x=top_sellers_df['seller_id'], 
             y=top_sellers_df['order_value'], 
-            palette='mako',  # Gunakan palet yang menarik
+            palette=['#A9DFBF' if i < 9 else '#008000' for i in range(10)],  # Gunakan palet yang menarik
             ax=ax)
 
 ax.set_title('Top Sellers', fontsize=20, fontweight='bold')
@@ -178,6 +178,50 @@ sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='#0
 axes[1].set_title('Customer Lifetime Value Distribution', fontsize=20, fontweight='bold')
 axes[1].set_xlabel('Customer Lifetime Value', fontsize=14)
 axes[1].set_ylabel('Number of Customers', fontsize=14)
+
+# Distribusi status pesanan
+st.subheader("Distribusi Status Pesanan")
+order_status_count = sales_data['order_status'].value_counts()
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Bar plot untuk distribusi status pesanan
+sns.barplot(x=order_status_count.index, y=order_status_count.values, color='#008000', ax=ax)
+ax.set_title('Order Status Distribution', fontsize=16, fontweight='bold')
+ax.set_xlabel('Order Status', fontsize=12)
+ax.set_ylabel('Number of Orders', fontsize=12)
+plt.xticks(rotation=45)
+st.pyplot(fig)
+
+# Waktu pengiriman sebenarnya vs perkiraan
+sales_data['delivery_diff_days'] = (sales_data['order_estimated_delivery_date'] - sales_data['order_delivered_customer_date']).dt.days
+st.subheader("Perbedaan Waktu Pengiriman")
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Histogram untuk perbedaan waktu pengiriman
+sns.histplot(sales_data['delivery_diff_days'], bins=20, kde=True, color='#008000', ax=ax)
+ax.set_title('Delivery Time Difference (Estimated - Actual)', fontsize=16, fontweight='bold')
+ax.set_xlabel('Days', fontsize=12)
+ax.set_ylabel('Number of Deliveries', fontsize=12)
+st.pyplot(fig)
+
+# Segmentasi Pelanggan Berdasarkan Frekuensi
+bins = [0, 1, 3, 10, 50, float('inf')]
+labels = ['New', 'Occasional', 'Regular', 'Frequent', 'VIP']
+sales_data['frequency_segment'] = pd.cut(sales_data.groupby('customer_id')['order_id'].transform('count'), bins=bins, labels=labels)
+
+# Visualisasi Segmen Pelanggan
+st.subheader("Segmentasi Pelanggan Berdasarkan Frekuensi Pembelian")
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Count plot untuk segmen pelanggan dengan dua warna
+sns.countplot(x='frequency_segment', 
+              data=sales_data, 
+              palette=['#A9DFBF' if i < 9 else '#008000' for i in range(10)],  # Ganti dengan warna yang diinginkan
+              ax=ax)
+
+ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
+ax.set_xlabel('Customer Segment', fontsize=12)
+ax.set_ylabel('Number of Customers', fontsize=12)
 
 st.pyplot(fig)
 
