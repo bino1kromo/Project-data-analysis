@@ -109,7 +109,7 @@ fig, ax = plt.subplots(figsize=(14, 7))
 sns.barplot(data=product_sales_df.head(10), 
             x='order_item_id', 
             y='product_category_name_english', 
-            palette=['#A9DFBF' if i < 9 else '#1D8348' for i in range(10)], 
+            palette=['#A9DFBF' if i < 9 else '#008000' for i in range(10)], 
             ax=ax)
 st.pyplot(fig)
 
@@ -207,8 +207,12 @@ sales_data['frequency_segment'] = pd.cut(sales_data.groupby('customer_id')['orde
 st.subheader("Segmentasi Pelanggan Berdasarkan Frekuensi Pembelian")
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Count plot untuk segmen pelanggan
-sns.countplot(x='frequency_segment', data=sales_data, color='#008000', ax=ax)
+# Count plot untuk segmen pelanggan dengan dua warna
+sns.countplot(x='frequency_segment', 
+              data=sales_data, 
+              palette=['#A9DFBF', '#008000'],  # Ganti dengan warna yang diinginkan
+              ax=ax)
+
 ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
 ax.set_xlabel('Customer Segment', fontsize=12)
 ax.set_ylabel('Number of Customers', fontsize=12)
