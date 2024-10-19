@@ -183,14 +183,16 @@ ax.set_xlabel('Days', fontsize=12)
 ax.set_ylabel('Number of Deliveries', fontsize=12)
 st.pyplot(fig)
 
-# Segmentasi Pelanggan
-st.subheader("Segmentasi Pelanggan Berdasarkan RFM")
-rfm_df['RFM_Score'] = (rfm_df['recency'].rank(ascending=True) + 
-                        rfm_df['frequency'].rank(ascending=False) + 
-                        rfm_df['monetary'].rank(ascending=False)).astype(int)
+# Segmentasi Pelanggan Berdasarkan Frekuensi
+bins = [0, 1, 3, 10, 50, float('inf')]
+labels = ['New', 'Occasional', 'Regular', 'Frequent', 'VIP']
+sales_data['frequency_segment'] = pd.cut(sales_data.groupby('customer_id')['order_id'].transform('count'), bins=bins, labels=labels)
+
+# Visualisasi Segmen Pelanggan
+st.subheader("Segmentasi Pelanggan Berdasarkan Frekuensi Pembelian")
 fig, ax = plt.subplots(figsize=(12, 6))
-sns.histplot(rfm_df['RFM_Score'], bins=20, kde=True, color='#008000', ax=ax)
-ax.set_title('Customer Segmentation Based on RFM Score', fontsize=16, fontweight='bold')
-ax.set_xlabel('RFM Score', fontsize=12)
+sns.countplot(x='frequency_segment', data=sales_data, color='#008000', ax=ax)
+ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
+ax.set_xlabel('Customer Segment', fontsize=12)
 ax.set_ylabel('Number of Customers', fontsize=12)
 st.pyplot(fig)
