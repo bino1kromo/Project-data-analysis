@@ -82,7 +82,7 @@ max_date = sales_data['order_purchase_timestamp'].max()
 
 with st.sidebar:
     st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/6b76b91f13b21ad5f2e38b8d5f014f431ffce9e9/Dashboard/logo-olist.png")
-    start_date, end_date = st.date_input("Rentang Waktu", min_value=min_date, max_value=max_date, value=[min_date, max_date])
+    start_date, end_date = st.date_input("Time Range", min_value=min_date, max_value=max_date, value=[min_date, max_date])
 
 # Menyaring data
 filtered_data = sales_data[(sales_data['order_purchase_timestamp'] >= str(start_date)) & (sales_data['order_purchase_timestamp'] <= str(end_date))]
@@ -92,7 +92,7 @@ st.title("Brazilian E-Commerce Dashboard")
 
 # Monthly Sales
 monthly_sales_df = create_monthly_sales_df(filtered_data)
-st.subheader("Performa Revenue Bulanan")
+st.subheader("Monthly Revenue Performance")
 fig, ax = plt.subplots(figsize=(14, 7))
 sns.lineplot(data=monthly_sales_df, x='month_year', y='price', ax=ax, color='#008000')
 plt.xticks(rotation=45)
@@ -103,7 +103,7 @@ st.pyplot(fig)
 
 # Top Product Sales
 product_sales_df = create_product_sales_df(filtered_data)
-st.subheader("Top 10 Kategori Produk Terlaris")
+st.subheader("Top 10 Best-Selling Product Categories")
 fig, ax = plt.subplots(figsize=(14, 7))
 sns.barplot(data=product_sales_df.head(10), 
             x='order_item_id', 
@@ -117,7 +117,7 @@ st.pyplot(fig)
 
 # RFM Analysis
 rfm_df = create_rfm_df(filtered_data)
-st.subheader("Distribusi Recency")
+st.subheader("Recency Distribution")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['recency'], bins=20, kde=True, color='#008000', ax=ax)
 ax.set_title('Recency Distribution', fontsize=20, fontweight='bold')
@@ -125,7 +125,7 @@ ax.set_xlabel('Days Since Last Purchase', fontsize=14)
 ax.set_ylabel('Number of Customers', fontsize=14)
 st.pyplot(fig)
 
-st.subheader("Distribusi Frequency")
+st.subheader("Frequency Distribution")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['frequency'], bins=20, kde=True, color='#008000', ax=ax)
 ax.set_title('Frequency Distribution', fontsize=20, fontweight='bold')
@@ -133,7 +133,7 @@ ax.set_xlabel('Number of Purchases', fontsize=14)
 ax.set_ylabel('Number of Customers', fontsize=14)
 st.pyplot(fig)
 
-st.subheader("Distribusi Monetary")
+st.subheader("Monetary Distribution")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['monetary'], bins=20, kde=True, color='#008000', ax=ax)
 ax.set_title('Monetary Distribution', fontsize=20, fontweight='bold')
@@ -147,7 +147,7 @@ top_sellers_df = create_top_sellers_df(filtered_data)
 # Memperpendek seller_id menjadi 5 karakter pertama
 top_sellers_df['seller_id'] = top_sellers_df['seller_id'].str[:5]
 
-st.subheader("Top 10 Penjual Berdasarkan Penjualan")
+st.subheader("Top 10 Sellers Based on Sales")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.barplot(x=top_sellers_df['seller_id'], 
             y=top_sellers_df['order_value'], 
@@ -164,7 +164,7 @@ st.pyplot(fig)
 sales_data = calculate_clv(filtered_data)
 
 # Visualisasi Tenure
-st.subheader("Distribusi Tenure")
+st.subheader("Tenure Distribution")
 fig, axes = plt.subplots(1, 2, figsize=(18, 6))
 
 # Histogram untuk Tenure Distribution
@@ -185,7 +185,7 @@ plt.tight_layout()
 st.pyplot(fig)
 
 # Distribusi status pesanan
-st.subheader("Distribusi Status Pesanan")
+st.subheader("Order Status Distribution")
 order_status_count = sales_data['order_status'].value_counts()
 fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -199,7 +199,7 @@ st.pyplot(fig)
 
 # Waktu pengiriman sebenarnya vs perkiraan
 sales_data['delivery_diff_days'] = (sales_data['order_estimated_delivery_date'] - sales_data['order_delivered_customer_date']).dt.days
-st.subheader("Perbedaan Waktu Pengiriman")
+st.subheader("Delivery Time Differences")
 fig, ax = plt.subplots(figsize=(12, 6))
 
 # Histogram untuk perbedaan waktu pengiriman
@@ -215,19 +215,27 @@ labels = ['New', 'Occasional', 'Regular', 'Frequent', 'VIP']
 sales_data['frequency_segment'] = pd.cut(sales_data.groupby('customer_id')['order_id'].transform('count'), bins=bins, labels=labels)
 
 # Visualisasi Segmen Pelanggan
-st.subheader("Segmentasi Pelanggan Berdasarkan Frekuensi Pembelian")
+st.subheader("Customer Segmentation Based on Purchase Frequency")
 fig, ax = plt.subplots(figsize=(12, 6))
+
+# Hitung jumlah unik segmen
+num_segments = sales_data['frequency_segment'].nunique()
+
+# Buat palette warna berdasarkan jumlah segmen
+palette = ['#A9DFBF' if i < 4 else '#008000' for i in range(num_segments)]
 
 # Count plot untuk segmen pelanggan dengan dua warna
 sns.countplot(x='frequency_segment', 
               data=sales_data, 
-              palette=['#A9DFBF' if i < 4 else '#008000' for i in range(5)],  # Ganti dengan warna yang diinginkan
+              palette=palette,  # Gunakan palette yang sudah ditentukan
               ax=ax)
 
+# Set judul dan label sumbu
 ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
 ax.set_xlabel('Customer Segment', fontsize=12)
 ax.set_ylabel('Number of Customers', fontsize=12)
 
+# Tampilkan plot di Streamlit
 st.pyplot(fig)
 
 # Menambahkan bagian penjelasan
@@ -236,31 +244,31 @@ st.sidebar.write("This dashboard provides deep insights into sales performance i
 # Menambahkan Insight ke Sidebar
 st.sidebar.subheader("Insight")
 st.sidebar.write("""
-### Tren Pendapatan dan Strategi
-- Pendapatan stabil hingga 2018, menurun di akhir tahun.
-- Evaluasi faktor penurunan dan replikasi strategi sukses.
+### Revenue Trends and Strategy
+- Revenue was stable until 2018 but declined at the end of the year.
+- Evaluate the factors behind the decline and replicate successful strategies.
 
-### Kategori Produk dan Pemasaran
-- "bed_bath_table" terlaris, diikuti "health_beauty".
-- Produk volume rendah butuh promosi untuk menarik minat.
+### Product Categories and Marketing
+- "bed_bath_table" is the best-selling category, followed by "health_beauty."
+- Low-volume products need promotion to attract interest.
 
-### Pelanggan dan Loyalitas
-- Banyak pelanggan pasif, sedikit pelanggan berkontribusi besar.
-- Tingkatkan loyalitas dan pembelian berulang.
+### Customers and Loyalty
+- Many customers are passive, with few contributing significantly.
+- Increase loyalty and repeat purchases.
 
-### Pengiriman dan Efisiensi
-- Sebagian besar pesanan berhasil dikirim.
-- Analisis diperlukan untuk pesanan yang gagal dikirim.
+### Delivery and Efficiency
+- The majority of orders were successfully delivered.
+- Analysis is needed for orders that failed to be delivered.
 
-### Pengiriman Tepat Waktu
-- Mayoritas pengiriman tepat waktu, beberapa terlambat.
-- Identifikasi penyebab keterlambatan untuk efisiensi.
+### On-Time Delivery
+- Most deliveries were on time, with some delayed.
+- Identify the causes of delays for efficiency.
 
-### Pelanggan Baru dan Retensi
-- Mayoritas pelanggan baru.
-- Butuh strategi retensi untuk pembelian ulang.
+### New Customers and Retention
+- The majority of customers are new.
+- Retention strategies are needed for repeat purchases.
 
-### Performa Penjual
-- Penjual ID 4869f tertinggi, penjual lain bisa tingkatkan performa.
+### Seller Performance
+- Seller ID 4869f has the highest performance; other sellers can improve their performance.
 """)
 
