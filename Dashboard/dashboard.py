@@ -84,6 +84,10 @@ with st.sidebar:
     st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/6b76b91f13b21ad5f2e38b8d5f014f431ffce9e9/Dashboard/logo-olist.png")
     start_date, end_date = st.date_input("Time Range", min_value=min_date, max_value=max_date, value=[min_date, max_date])
 
+# Menambahkan detail keterangan data pada sidebar atau di awal halaman utama
+st.sidebar.subheader("Dataset Information")
+st.sidebar.write(""" This dataset is a collection of information about 100,000 orders placed on the Olist Store, an e-commerce platform in Brazil. The data covers the period from 2016 to 2018 and includes various details about the orders, such as their status, price, payment and shipping performance. It also provides insights into customer location, product attributes, and customer reviews. To ensure privacy, the dataset has been anonymized, and any references to specific companies and partners in the review text have been replaced with names from the Game of Thrones series. This dataset can be useful for analyzing and understanding various aspects of e-commerce operations in Brazil.""")
+
 # Menyaring data
 filtered_data = sales_data[(sales_data['order_purchase_timestamp'] >= str(start_date)) & (sales_data['order_purchase_timestamp'] <= str(end_date))]
 
