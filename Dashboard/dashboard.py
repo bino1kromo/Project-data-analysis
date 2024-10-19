@@ -81,7 +81,7 @@ min_date = sales_data['order_purchase_timestamp'].min()
 max_date = sales_data['order_purchase_timestamp'].max()
 
 with st.sidebar:
-    st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/6b76b91f13b21ad5f2e38b8d5f014f431ffce9e9/Dashboard/logo-olist.png")
+    st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/ef5356c16623d9ab0f65af5a5cce8c798e3288c0/Dashboard/logo-olist.png")
     start_date, end_date = st.date_input("Time Range", min_value=min_date, max_value=max_date, value=[min_date, max_date])
 
 # Menambahkan detail keterangan data pada sidebar atau di awal halaman utama
@@ -276,4 +276,4 @@ st.sidebar.write("""
 - Seller ID 4869f has the highest performance; other sellers can improve their performance.
 """)
 
-st.sidebar.write("""created by: Meysi Supmawati""")
+st.sidebar.write("""Created by: Meysi Supmawati""")
