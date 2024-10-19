@@ -86,7 +86,6 @@ max_date = sales_data['order_purchase_timestamp'].max()
 # Membuat sidebar untuk memilih rentang waktu dengan menggunakan widget date_input
 with st.sidebar:
     # Menampilkan gambar di sidebar
-    # Menampilkan gambar di sidebar
     st.image("https://raw.githubusercontent.com/bino1kromo/project-brazilian-ecommerce/6b76b91f13b21ad5f2e38b8d5f014f431ffce9e9/Dashboard/logo-olist.png")
     # Mengatur rentang waktu yang dapat dipilih pengguna
     start_date, end_date = st.date_input("Rentang Waktu", min_value=min_date, max_value=max_date, value=[min_date, max_date])
