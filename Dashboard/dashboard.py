@@ -276,3 +276,4 @@ st.sidebar.write("""
 - Seller ID 4869f has the highest performance; other sellers can improve their performance.
 """)
 
+st.sidebar.write("""created by: Meysi Supmawati""")
