@@ -169,15 +169,20 @@ fig, axes = plt.subplots(1, 2, figsize=(18, 6))
 
 # Histogram untuk Tenure Distribution
 sns.histplot(sales_data['days_since_first_purchase'], bins=20, kde=True, color='#008000', ax=axes[0])
-axes[0].set_title('Customer Tenure Distribution', fontsize=20, fontweight='bold')
-axes[0].set_xlabel('Days Since First Purchase', fontsize=14)
-axes[0].set_ylabel('Number of Customers', fontsize=14)
+axes[0].set_title('Tenure Distribution', fontsize=16, fontweight='bold')
+axes[0].set_xlabel('Days Since First Purchase', fontsize=12)
+axes[0].set_ylabel('Number of Customers', fontsize=12)
+axes[0].tick_params(axis='x', rotation=45)
 
-# Visualisasi CLV
-sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='#008000', ax=axes[1])
-axes[1].set_title('Customer Lifetime Value Distribution', fontsize=20, fontweight='bold')
-axes[1].set_xlabel('Customer Lifetime Value', fontsize=14)
-axes[1].set_ylabel('Number of Customers', fontsize=14)
+# Histogram untuk Customer Lifetime Value Distribution
+sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='#008000', ax=axes[1])  # Menggunakan warna yang sama
+axes[1].set_title('Customer Lifetime Value Distribution', fontsize=16, fontweight='bold')
+axes[1].set_xlabel('Customer Lifetime Value', fontsize=12)
+axes[1].set_ylabel('Number of Customers', fontsize=12)
+axes[1].tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+st.pyplot(fig)
 
 # Distribusi status pesanan
 st.subheader("Distribusi Status Pesanan")
@@ -226,5 +231,36 @@ ax.set_ylabel('Number of Customers', fontsize=12)
 st.pyplot(fig)
 
 # Menambahkan bagian penjelasan
-st.sidebar.subheader("Penjelasan")
-st.sidebar.write("Dashboard ini memberikan wawasan mendalam mengenai performa penjualan dalam ecommerce Brasil. Anda dapat memfilter rentang waktu untuk melihat performa penjualan bulanan, kategori produk terlaris, analisis RFM, serta memahami Customer Lifetime Value.")
+st.sidebar.subheader("Overview")
+st.sidebar.write("This dashboard provides deep insights into sales performance in Brazilian ecommerce. You can filter timeframes to see monthly sales performance, best-selling product categories, RFM analysis, and understand Customer Lifetime Value.")
+# Menambahkan Insight ke Sidebar
+st.sidebar.subheader("Insight")
+st.sidebar.write("""
+### Tren Pendapatan dan Strategi
+- Pendapatan stabil hingga 2018, menurun di akhir tahun.
+- Evaluasi faktor penurunan dan replikasi strategi sukses.
+
+### Kategori Produk dan Pemasaran
+- "bed_bath_table" terlaris, diikuti "health_beauty".
+- Produk volume rendah butuh promosi untuk menarik minat.
+
+### Pelanggan dan Loyalitas
+- Banyak pelanggan pasif, sedikit pelanggan berkontribusi besar.
+- Tingkatkan loyalitas dan pembelian berulang.
+
+### Pengiriman dan Efisiensi
+- Sebagian besar pesanan berhasil dikirim.
+- Analisis diperlukan untuk pesanan yang gagal dikirim.
+
+### Pengiriman Tepat Waktu
+- Mayoritas pengiriman tepat waktu, beberapa terlambat.
+- Identifikasi penyebab keterlambatan untuk efisiensi.
+
+### Pelanggan Baru dan Retensi
+- Mayoritas pelanggan baru.
+- Butuh strategi retensi untuk pembelian ulang.
+
+### Performa Penjual
+- Penjual ID 4869f tertinggi, penjual lain bisa tingkatkan performa.
+""")
+
