@@ -216,7 +216,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 # Count plot untuk segmen pelanggan dengan dua warna
 sns.countplot(x='frequency_segment', 
               data=sales_data, 
-              palette=['#A9DFBF' if i < 4 else '#008000' for i in range(10)],  # Ganti dengan warna yang diinginkan
+              palette=['#A9DFBF' if i < 4 else '#008000' for i in range(5)],  # Ganti dengan warna yang diinginkan
               ax=ax)
 
 ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
