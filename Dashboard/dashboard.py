@@ -21,7 +21,6 @@ import requests  # Untuk mengunduh file dari URL
 sns.set(style='darkgrid')
 
 # Fungsi Helper
-
 # Fungsi untuk membuat DataFrame dengan penjualan bulanan
 def create_monthly_sales_df(df):
     monthly_sales = df.groupby(['order_purchase_year', 'order_purchase_month'])['price'].sum().reset_index()
@@ -60,7 +59,6 @@ def calculate_clv(df):
     return df.merge(clv, on='customer_id', how='left')
 
 # Load Data
-
 # URL file .gz dari GitHub
 url = 'https://raw.githubusercontent.com/bino1kromo/Project-data-analysis-meysi/246a8f513863306690d02f6d538e6449ee2a9c1e/Dashboard/sales_data.gz'
 
@@ -79,7 +77,6 @@ sales_data['order_purchase_month'] = sales_data['order_purchase_timestamp'].dt.m
 sales_data['order_purchase_year'] = sales_data['order_purchase_timestamp'].dt.year
 
 # Sidebar Filters
-
 min_date = sales_data['order_purchase_timestamp'].min()
 max_date = sales_data['order_purchase_timestamp'].max()
 
@@ -91,7 +88,6 @@ with st.sidebar:
 filtered_data = sales_data[(sales_data['order_purchase_timestamp'] >= str(start_date)) & (sales_data['order_purchase_timestamp'] <= str(end_date))]
 
 # Main Dashboard
-
 st.title("Brazilian E-Commerce Dashboard")
 
 # Monthly Sales
@@ -100,6 +96,9 @@ st.subheader("Performa Revenue Bulanan")
 fig, ax = plt.subplots(figsize=(14, 7))
 sns.lineplot(data=monthly_sales_df, x='month_year', y='price', ax=ax, color='#008000')
 plt.xticks(rotation=45)
+ax.set_title('Monthly Revenue Performance', fontsize=20, fontweight='bold')
+ax.set_xlabel('Month-Year', fontsize=14)
+ax.set_ylabel('Total Revenue', fontsize=14)
 st.pyplot(fig)
 
 # Top Product Sales
@@ -109,8 +108,11 @@ fig, ax = plt.subplots(figsize=(14, 7))
 sns.barplot(data=product_sales_df.head(10), 
             x='order_item_id', 
             y='product_category_name_english', 
-            palette=['#A9DFBF' if i < 9 else '#008000' for i in range(10)], 
+            palette='viridis',  # Gunakan palet yang menarik
             ax=ax)
+ax.set_title('Top 10 Best Selling Product Categories', fontsize=20, fontweight='bold')
+ax.set_xlabel('Number of Sales', fontsize=14)
+ax.set_ylabel('Product Category', fontsize=14)
 st.pyplot(fig)
 
 # RFM Analysis
@@ -118,16 +120,25 @@ rfm_df = create_rfm_df(filtered_data)
 st.subheader("Distribusi Recency")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['recency'], bins=20, kde=True, color='#008000', ax=ax)
+ax.set_title('Recency Distribution', fontsize=20, fontweight='bold')
+ax.set_xlabel('Days Since Last Purchase', fontsize=14)
+ax.set_ylabel('Number of Customers', fontsize=14)
 st.pyplot(fig)
 
 st.subheader("Distribusi Frequency")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['frequency'], bins=20, kde=True, color='#008000', ax=ax)
+ax.set_title('Frequency Distribution', fontsize=20, fontweight='bold')
+ax.set_xlabel('Number of Purchases', fontsize=14)
+ax.set_ylabel('Number of Customers', fontsize=14)
 st.pyplot(fig)
 
 st.subheader("Distribusi Monetary")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.histplot(rfm_df['monetary'], bins=20, kde=True, color='#008000', ax=ax)
+ax.set_title('Monetary Distribution', fontsize=20, fontweight='bold')
+ax.set_xlabel('Total Spending', fontsize=14)
+ax.set_ylabel('Number of Customers', fontsize=14)
 st.pyplot(fig)
 
 # Top Sellers
@@ -140,12 +151,12 @@ st.subheader("Top 10 Penjual Berdasarkan Penjualan")
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.barplot(x=top_sellers_df['seller_id'], 
             y=top_sellers_df['order_value'], 
-            palette=['#AED6F1' if i < 9 else '#2E86C1' for i in range(10)], 
+            palette='mako',  # Gunakan palet yang menarik
             ax=ax)
 
-ax.set_title('Top Sellers', fontsize=16, fontweight='bold')
-ax.set_xlabel('Seller ID (5 Karakter Pertama)', fontsize=12)
-ax.set_ylabel('Total Penjualan', fontsize=12)
+ax.set_title('Top Sellers', fontsize=20, fontweight='bold')
+ax.set_xlabel('Seller ID (5 Karakter Pertama)', fontsize=14)
+ax.set_ylabel('Total Penjualan', fontsize=14)
 plt.xticks(rotation=45)  # Memutar label sumbu x jika perlu
 st.pyplot(fig)
 
@@ -158,62 +169,18 @@ fig, axes = plt.subplots(1, 2, figsize=(18, 6))
 
 # Histogram untuk Tenure Distribution
 sns.histplot(sales_data['days_since_first_purchase'], bins=20, kde=True, color='#008000', ax=axes[0])
-axes[0].set_title('Tenure Distribution', fontsize=16, fontweight='bold')
-axes[0].set_xlabel('Days Since First Purchase', fontsize=12)
-axes[0].set_ylabel('Number of Customers', fontsize=12)
-axes[0].tick_params(axis='x', rotation=45)
+axes[0].set_title('Customer Tenure Distribution', fontsize=20, fontweight='bold')
+axes[0].set_xlabel('Days Since First Purchase', fontsize=14)
+axes[0].set_ylabel('Number of Customers', fontsize=14)
 
-# Histogram untuk Customer Lifetime Value Distribution
-sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='#008000', ax=axes[1])  # Menggunakan warna yang sama
-axes[1].set_title('Customer Lifetime Value Distribution', fontsize=16, fontweight='bold')
-axes[1].set_xlabel('Customer Lifetime Value', fontsize=12)
-axes[1].set_ylabel('Number of Customers', fontsize=12)
-axes[1].tick_params(axis='x', rotation=45)
+# Visualisasi CLV
+sns.histplot(sales_data['customer_lifetime_value'], bins=20, kde=True, color='#008000', ax=axes[1])
+axes[1].set_title('Customer Lifetime Value Distribution', fontsize=20, fontweight='bold')
+axes[1].set_xlabel('Customer Lifetime Value', fontsize=14)
+axes[1].set_ylabel('Number of Customers', fontsize=14)
 
-plt.tight_layout()
 st.pyplot(fig)
 
-# Distribusi status pesanan
-st.subheader("Distribusi Status Pesanan")
-order_status_count = sales_data['order_status'].value_counts()
-fig, ax = plt.subplots(figsize=(12, 6))
-
-# Bar plot untuk distribusi status pesanan
-sns.barplot(x=order_status_count.index, y=order_status_count.values, color='#008000', ax=ax)
-ax.set_title('Order Status Distribution', fontsize=16, fontweight='bold')
-ax.set_xlabel('Order Status', fontsize=12)
-ax.set_ylabel('Number of Orders', fontsize=12)
-plt.xticks(rotation=45)
-st.pyplot(fig)
-
-# Waktu pengiriman sebenarnya vs perkiraan
-sales_data['delivery_diff_days'] = (sales_data['order_estimated_delivery_date'] - sales_data['order_delivered_customer_date']).dt.days
-st.subheader("Perbedaan Waktu Pengiriman")
-fig, ax = plt.subplots(figsize=(12, 6))
-
-# Histogram untuk perbedaan waktu pengiriman
-sns.histplot(sales_data['delivery_diff_days'], bins=20, kde=True, color='#008000', ax=ax)
-ax.set_title('Delivery Time Difference (Estimated - Actual)', fontsize=16, fontweight='bold')
-ax.set_xlabel('Days', fontsize=12)
-ax.set_ylabel('Number of Deliveries', fontsize=12)
-st.pyplot(fig)
-
-# Segmentasi Pelanggan Berdasarkan Frekuensi
-bins = [0, 1, 3, 10, 50, float('inf')]
-labels = ['New', 'Occasional', 'Regular', 'Frequent', 'VIP']
-sales_data['frequency_segment'] = pd.cut(sales_data.groupby('customer_id')['order_id'].transform('count'), bins=bins, labels=labels)
-
-# Visualisasi Segmen Pelanggan
-st.subheader("Segmentasi Pelanggan Berdasarkan Frekuensi Pembelian")
-fig, ax = plt.subplots(figsize=(12, 6))
-
-# Count plot untuk segmen pelanggan dengan dua warna
-sns.countplot(x='frequency_segment', 
-              data=sales_data, 
-              palette=['#008000', '#A9DFBF'],  # Ganti dengan warna yang diinginkan
-              ax=ax)
-
-ax.set_title('Customer Segmentation', fontsize=16, fontweight='bold')
-ax.set_xlabel('Customer Segment', fontsize=12)
-ax.set_ylabel('Number of Customers', fontsize=12)
-st.pyplot(fig)
+# Menambahkan bagian penjelasan
+st.sidebar.subheader("Penjelasan")
+st.sidebar.write("Dashboard ini memberikan wawasan mendalam mengenai performa penjualan dalam ecommerce Brasil. Anda dapat memfilter rentang waktu untuk melihat performa penjualan bulanan, kategori produk terlaris, analisis RFM, serta memahami Customer Lifetime Value.")
